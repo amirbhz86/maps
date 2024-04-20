@@ -1,13 +1,50 @@
 # Android Installation
 
-## Supported mapbox libraries
+## React-Native > `0.60.0`
 
-We're only supporting mapbox 10.16* and 11.*. The default is 10.16*. 
-Next release will be 11.* only so we recommend updatign to 11.*
+If you are using autolinking feature introduced in React-Native `0.60.0` you do not need any additional steps.
 
-### Adding mapbox maven repo
+<br>
 
-You will need to authorize your download of the Maps SDK via a secret access token with the `DOWNLOADS:READ` scope.  
+---
+
+<br>
+
+## Mapbox Maps SDK (pre v10)
+
+We've set up default Mapbox dependencies for you.  
+Feel free to check em out [here](https://github.com/rnmapbox/maps/blob/eca4858744cab134b06ae455bcdacc63233318a5/android/rctmgl/build.gradle#L55-L76)
+
+However, it is also possible to set a custom version of the [Mapbox SDK](https://github.com/mapbox/mapbox-gl-native-android)  
+Which will overwrite our defaults.
+
+Add something like the following to your `android/build.gradle > buildscript > ext` section:
+
+```groovy
+// android/build.gradle
+
+buildscript {
+    // ... stuff
+    ext {
+        // ... stuff
+        rnmbglMapboxLibs = {
+            implementation 'com.mapbox.mapboxsdk:mapbox-android-sdk:9.7.1'
+            implementation 'com.mapbox.mapboxsdk:mapbox-sdk-services:5.8.0'
+            implementation 'com.mapbox.mapboxsdk:mapbox-sdk-turf:5.8.0'
+            implementation 'com.mapbox.mapboxsdk:mapbox-android-gestures:0.7.0'
+        }
+
+        rnmbglMapboxPlugins = {
+            implementation 'com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-v9:0.8.0'
+            implementation 'com.mapbox.mapboxsdk:mapbox-android-plugin-localization-v9:0.14.0'
+            implementation 'com.mapbox.mapboxsdk:mapbox-android-plugin-markerview-v9:0.4.0'
+        }
+    // ... more stuff?
+    }
+}
+```
+
+NOTICE, If you are using newer versions of the SDK, you will need to authorize your download of the Maps SDK via a secret access token with the `DOWNLOADS:READ` scope.  
 This [guide](https://docs.mapbox.com/android/maps/guides/install/#configure-credentials) explains how to `Configure credentials` and `Configure your secret token`.
 
 Then under section `allprojects/repositories` add your data:
@@ -36,66 +73,53 @@ allprojects {
 }
 ```
 
-### Using non default mapbox version
+Feel free to check out the `/example` projects [`android/build.gradle`](https://github.com/rnmapbox/maps/blob/master/example/android/build.gradle) for inspiration!
 
-*Warning*: If you set a custom version, make sure you revisit, any time you update @rnmapbox/maps. Setting it to earlier version than what we exepect will likely result in a build error.
+<br>
 
-Set `RNMapboxMapsVersion` in `android/build.gradle > buildscript > ext` section
+---
 
+<br>
 
-```groovy
-buildscript {
-    ext {
-        RNMapboxMapsVersion = '11.1.0'
-    }
-}
-```
+## Using MapLibre
 
-you can also customize all the libraries, should it be neccesary
+[MapLibre](https://github.com/maplibre/maplibre-gl-native) is an OSS fork of MapboxGL
+
+Overwrite mapbox dependecies within your `android/build.gradle > buildscript > ext` section
 
 ```groovy
 buildscript {
     ext {
         // ...
-        RNMapboxMapsLibs = { // optional - only required if you want to customize it
-            implementation 'com.mapbox.maps:android:10.6.0'
-            implementation 'com.mapbox.mapboxsdk:mapbox-sdk-turf:5.4.1'
+
+        rnmbglMapboxLibs = {
+            implementation ("org.maplibre.gl:android-sdk:9.2.1")
+            implementation ("com.mapbox.mapboxsdk:mapbox-sdk-turf:5.3.0")
+        }
+
+        rnmbglMapboxPlugins = {
+            implementation ("com.mapbox.mapboxsdk:mapbox-android-gestures:0.7.0")
+            implementation ("com.mapbox.mapboxsdk:mapbox-android-plugin-localization-v9:0.12.0")    {
+                exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
+            }
+            implementation ("com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-v9:0.8.0")        {
+                exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
+            }
+            implementation ("com.mapbox.mapboxsdk:mapbox-android-plugin-markerview-v9:0.4.0") {
+                exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
+            }
+        }
+    }
+}
+
+allprojects {
+    repositories {
+        // ...
+        maven {
+            url = "https://dl.bintray.com/maplibre/maplibre-gl-native"
         }
     }
 }
 ```
 
-### Using v11
-
-```groovy
-buildscript {
-    ext {
-        RNMapboxMapsVersion = '11.0.0'
-    }
-}
-```
-
-# Troubleshooting
-
-If you see `2 files found with path 'lib/arm64-v8a/libc++_shared.so' from inputs` issue see [possible workaround](#workaround-for-2-files-found-with-path-libarm64-v8alibc_sharedso-from-inputs).
-
-
-### Workaround for 2 files found with path 'lib/arm64-v8a/libc++_shared.so' from inputs
-
-```sh
-code android/app/build.gradle
-```
-
-add the following
-```gradle
-android {
-    packagingOptions {
-        pickFirst 'lib/x86/libc++_shared.so'
-        pickFirst 'lib/x86_64/libc++_shared.so'
-        pickFirst 'lib/arm64-v8a/libc++_shared.so'
-        pickFirst 'lib/armeabi-v7a/libc++_shared.so'
-    }
-}
-```
-
-
+Feel free to check out the `/example` projects [`android/build.gradle`](https://github.com/rnmapbox/maps/blob/master/example/android/build.gradle) for inspiration!
