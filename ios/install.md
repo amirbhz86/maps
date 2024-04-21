@@ -1,34 +1,32 @@
 # iOS Installation
 
+## React-Native > `0.60.0`
 
-`@rnmapbox/maps` via `npm` or `yarn`.
+The following assumes, that you're using autolinking and installed
 
-<br/>
+`@react-native-mapbox-gl/maps` via `npm` or `yarn`.
+
+<br>
+
+The following is required for every following setup
 
 Add the following to your `ios/Podfile`:
 
-
-
 ```ruby
   pre_install do |installer|
-    $RNMapboxMaps.pre_install(installer)
+    $RNMBGL.pre_install(installer)
     ... other pre install hooks
   end
 ```
 
 ```ruby
   post_install do |installer|
-    $RNMapboxMaps.post_install(installer)
+    $RNMBGL.post_install(installer)
     ... other post install hooks
   end
 ```
 
-<br>
-
-You will need to authorize your download of the Maps SDK with a secret access token with the `DOWNLOADS:READ` scope. This [guide](https://docs.mapbox.com/ios/maps/guides/install/#configure-credentials) explains how to configure the secret token under section `Configure your secret token`.
-
-
-Run `pod install` to download the proper mapbox dependency.
+Running `pod install` will add Mapbox iOS SDK `5.8.0`
 
 ```sh
 # Go to the ios folder
@@ -38,57 +36,74 @@ cd ios
 pod install
 ```
 
-If you want to show the user's current location on the map with the [LocationPuck](../docs/LocationPuck.md) component, you'll need to add the following property to your `Info.plist` (see [Mapbox iOS docs](https://docs.mapbox.com/ios/maps/guides/user-location/#request-temporary-access-to-full-accuracy-location) for more info):
-
-```
-<key>NSLocationWhenInUseUsageDescription</key>
-<string>Show current location on map.</string>
-```
-
 You are good to go!
 
 Read on if you want to edit your Mapbox version or flavor.
 
-<br/>
+<br>
 
-## Using a custom version of the Mapbox SDK
+## Mapbox Maps SDK
 
-You can also override the version to use. *Warning:* if you set a version, then later update, the `rnamapbox/maps` library it's possible that you'll end up using Mapbox older version than supported. Make sure you revise this value with `@rnmapbox/maps` updates. Also note that for 11.0 or later versions you'll need to set `$RNMapboxMapsUseV11 = true`, see bellow
+It is possible to set a custom version of the Mapbox SDK:
 
-```ruby
-# Warning: only for advanced use cases, only do this if you know what you're doing.
-# $RNMapboxMapsVersion = '~> 10.16.2'
-```
+### New version - since `8.1rc5`
 
-<br/>
-
-## V11 support
-
-We have support for mapbox 11.
-
-Add the following to your Podfile:
+Add the following to you `ios/Podfile`:
 
 ```ruby
-$RNMapboxMapsVersion = '= 11.1.0'
+$ReactNativeMapboxGLIOSVersion = '~> 6.1'
 ```
 
-If using expo managed workflow, set the "RNMapboxMapsVersion" variable. See the [expo guide](/plugin/install.md)
+Check the current version of the SDK [here](https://docs.mapbox.com/ios/maps/overview/).
 
-## Troubleshooting
+### Mapbox Maps SDK > `v6.0.0`
 
-### Pod install fails on upgrade of @rnmapbox/maps with `could not find compatible versions for pod "MapboxMaps"`
+If you are using version `v6.0.0` of the SDK or later, you will need to authorize your download of the Maps SDK with a secret access token with the `DOWNLOADS:READ` scope. This [guide](https://docs.mapbox.com/ios/maps/guides/install/#configure-credentials) explains how to configure the secret token under section `Configure your secret token`.
 
-Example message:
-```log
-[!] CocoaPods could not find compatible versions for pod "MapboxMaps":
-  In snapshot (Podfile.lock):
-    MapboxMaps (= 10.15.0, ~> 10.15.0)
+<br>
 
-  In Podfile:
-    rnmapbox-maps (from `../node_modules/@rnmapbox/maps`) was resolved to 10.0.15, which depends on
-      MapboxMaps (~> 10.16.0)
+## Maplibre
+
+[MapLibre](https://github.com/maplibre/maplibre-gl-native) is an OSS fork of MapboxGL
+
+Current default MapLibre version is `5.12.0`
+
+If you want to use that, simply add this to your `ios/Podfile`
+
+```ruby
+$RNMBGL_Use_SPM = true
+$RNMGL_USE_MAPLIBRE = true
 ```
 
-Please use `pod update MapboxMaps` as suggested by cocoapods
+If you want to adjust/ edit your MapLibre version you can also pass a hash
+
+Example overwrite within your `ios/Podfile`:
+
+```ruby
+$RNMBGL_Use_SPM = {
+  url: "https://github.com/maplibre/maplibre-gl-native-distribution",
+  requirement: {
+    kind: "upToNextMajorVersion",
+    minimumVersion: "5.12.0"
+  },
+  product_name: "Mapbox"
+}
+$RNMGL_USE_MAPLIBRE = true
+```
 
 
+<br>
+
+## React-Native < `0.60.0`
+
+### Using CocoaPods without autolink
+
+To install with CocoaPods, add the following to your `Podfile`:
+
+```ruby
+  # Mapbox
+  pod 'react-native-mapbox-gl', :path => '../node_modules/@react-native-mapbox-gl/maps'
+
+```
+
+Then run `pod install` and rebuild your project.
